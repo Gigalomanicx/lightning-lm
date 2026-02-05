@@ -76,7 +76,7 @@ class SlamSystem {
 
    private:
     /// ros端保存地图的实现
-    void SaveMap(const SaveMapService::Request::SharedPtr request, SaveMapService::Response::SharedPtr response);
+    void SaveMap(SaveMapService::Request::SharedPtr request, SaveMapService::Response::SharedPtr response);
 
     Options options_;
     std::atomic_bool running_ = false;
@@ -84,6 +84,7 @@ class SlamSystem {
     rclcpp::Service<SaveMapService>::SharedPtr savemap_service_ = nullptr;
 
     std::string map_name_;  // 地图名
+    std::string yaml_path_;  // 配置文件路径
 
     std::shared_ptr<LaserMapping> lio_ = nullptr;       // lio 前端
     std::shared_ptr<LoopClosing> lc_ = nullptr;         // 回环检测

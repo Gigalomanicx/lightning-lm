@@ -113,9 +113,13 @@ bool SlamSystem::Init(const std::string& yaml_path) {
                 Timer::Evaluate([&]() { ProcessLidar(cloud); }, "Proc Lidar", true);
             });
 
-        savemap_service_ = node_->create_service<SaveMapService>(
-            "lightning/save_map", [this](const SaveMapService::Request::SharedPtr& req,
-                                         SaveMapService::Response::SharedPtr res) { SaveMap(req, res); });
+        savemap_service_ = node_->create_service<lightning::srv::SaveMap>(
+            "lightning/save_map",
+            [this](std::shared_ptr<rmw_request_id_t> req_id,
+                   std::shared_ptr<lightning::srv::SaveMap::Request> req,
+                   std::shared_ptr<lightning::srv::SaveMap::Response> res) {
+                SaveMap(req, res);
+            });
 
         LOG(INFO) << "online slam node has been created.";
     }
@@ -134,7 +138,7 @@ void SlamSystem::StartSLAM(std::string map_name) {
     running_ = true;
 }
 
-void SlamSystem::SaveMap(const SaveMapService::Request::SharedPtr request,
+void SlamSystem::SaveMap(SaveMapService::Request::SharedPtr request,
                          SaveMapService::Response::SharedPtr response) {
     map_name_ = request->map_id;
     std::string save_path = "./data/" + map_name_ + "/";
@@ -145,9 +149,6 @@ void SlamSystem::SaveMap(const SaveMapService::Request::SharedPtr request,
 
 void SlamSystem::SaveMap(const std::string& path) {
     std::string save_path = path;
-    if (save_path.empty()) {
-        save_path = "./data/" + map_name_ + "/";
-    }
 
     LOG(INFO) << "slam map saving to " << save_path;
 

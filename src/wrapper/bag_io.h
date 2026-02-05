@@ -41,6 +41,9 @@ class RosbagIO {
         signal(SIGINT, lightning::debug::SigHandle);
     }
 
+    /// 设置 IMU 时间戳修正偏移量（秒）
+    void SetImuTimestampOffset(double offset_sec) { imu_timestamp_offset_ = offset_sec; }
+
     using MsgType = std::shared_ptr<rosbag2_storage::SerializedBagMessage>;
     using MessageProcessFunction = std::function<bool(const MsgType &m)>;
 
@@ -94,7 +97,8 @@ class RosbagIO {
             seri_imu_.deserialize_message(&data, msg.get());
 
             IMUPtr imu = std::make_shared<IMU>();
-            imu->timestamp = ToSec(msg->header.stamp);
+            // 应用时间戳修正偏移量
+            imu->timestamp = ToSec(msg->header.stamp) + imu_timestamp_offset_;
 
             /// NOTE: 如果需要乘重力，请修改此处
             imu->linear_acceleration =
@@ -132,6 +136,7 @@ class RosbagIO {
 
     std::string bag_file_;
     DatasetType dataset_type_ = DatasetType::NCLT;
+    double imu_timestamp_offset_ = 0.0;  // IMU 时间戳修正偏移量（秒）
 };
 }  // namespace lightning
 

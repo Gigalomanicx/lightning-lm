@@ -141,8 +141,12 @@ After building, you will get the corresponding online/offline mapping and locali
 offline programs are suitable for scenarios with offline data packets to quickly obtain mapping/localization results,
 while the online programs are suitable for scenarios with actual sensors to obtain real-time results.
 
+export CMAKE_PREFIX_PATH="/home/ubuntu/.local/yaml-cpp-0.7.0:$CMAKE_PREFIX_PATH"
+export LD_LIBRARY_PATH="/home/ubuntu/.local/yaml-cpp-0.7.0/lib:$LD_LIBRARY_PATH"
+
 For example, calling the offline mapping program on the NCLT dataset:
 ```ros2 run lightning run_slam_offline --input_bag ~/data/NCLT/20130110/20130110.db3 --config ./config/default_nclt.yaml```
+```ros2 run lightning run_slam_offline --input_bag /home/ubuntu/ssd/Custom_Datasets/bag4/bag4_0.db3 --config ./src/lightning-lm/config/default_rslidar.yaml```
 
 If you want to call the online version, just change the offline part to online.
 

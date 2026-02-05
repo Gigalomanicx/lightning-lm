@@ -1,4 +1,26 @@
-find_package(glog REQUIRED)
+# Find glog - Ubuntu 20.04 may not have CMake config
+find_package(glog QUIET)
+
+if(NOT glog_FOUND)
+    find_package(PkgConfig REQUIRED)
+    pkg_check_modules(glog REQUIRED libglog)
+    set(glog_LIBRARIES ${glog_LINK_LIBRARIES})
+    set(GLOG_INCLUDE_DIRS ${glog_INCLUDE_DIRS})
+    set(GLOG_LIBRARIES ${glog_LINK_LIBRARIES})
+    set(GLOG_FOUND TRUE)
+else()
+    # If found via find_package, use standard variables
+    if(NOT GLOG_INCLUDE_DIRS)
+        set(GLOG_INCLUDE_DIRS ${glog_INCLUDE_DIRS})
+    endif()
+    if(NOT GLOG_LIBRARIES)
+        set(GLOG_LIBRARIES ${glog_LIBRARIES})
+        if(NOT GLOG_LIBRARIES)
+            set(GLOG_LIBRARIES glog)
+        endif()
+    endif()
+endif()
+
 find_package(Eigen3 REQUIRED)
 find_package(PCL REQUIRED)
 find_package(yaml-cpp REQUIRED)
@@ -39,6 +61,7 @@ include_directories(
         ${OpenCV_INCLUDE_DIRS}
         ${Boost_INCLUDE_DIRS}
         ${GLOG_INCLUDE_DIRS}
+        ${yaml-cpp_INCLUDE_DIRS}
         ${Pangolin_INCLUDE_DIRS}
         ${GLEW_INCLUDE_DIRS}
         ${tf2_INCLUDE_DIRS}
@@ -62,10 +85,12 @@ set(third_party_libs
         ${PCL_LIBRARIES}
         ${OpenCV_LIBS}
         ${Pangolin_LIBRARIES}
-        glog gflags
+        ${GLOG_LIBRARIES}
+        gflags
         ${yaml-cpp_LIBRARIES}
         ${pcl_conversions_LIBRARIES}
         tbb
         ${rosbag2_cpp_LIBRARIES}
+        ffi
 )
 

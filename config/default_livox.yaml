@@ -1,6 +1,6 @@
 # 针对NCLT的配置
 common:
-  dataset: "nclt"
+  dataset: "bjut"
   lidar_topic: "points_raw"
   livox_lidar_topic: "/livox/lidar"
   imu_topic: "/livox/imu"

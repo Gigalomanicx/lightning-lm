@@ -1,0 +1,60 @@
+laserMapping:
+  ros__parameters:
+    #==================== 通用配置 ====================
+    common:
+      lid_topic: "/rslidar_points"      #! LiDAR 点云话题名
+      imu_topic: "/imu/data"            #! IMU 数据话题名
+      time_sync_en: false               # 是否启用软件LiDAR-IMU 时间同步（仅当外部硬件同步不可用时此处设为true）
+
+    #==================== 点云预处理  配置 ====================
+    preprocess:
+      lidar_type: 4                     # LiDAR 类型: 1=Livox, 2=Velodyne, 3=Ouster, 4=Robosense/RSLIDAR
+      vertical_resolution: 128          # 垂直分辨率（线数）: RS 系列常见 16/32/64/128
+      horizontal_resolution: 1800       # 水平分辨率（每圈点数）， 0.2° -> 1800
+      scan_rate: 20.0                   # 扫描频率 (Hz)，用于当点云无时间戳时估算每点时间 10Hz/20Hz
+      blind: 3.0                        # 盲区距离 (m)，小于此距离的点将被过滤
+      time_scale: 1e-3                  # 时间缩放因子，主要用于 Velodyne 兼容（rslidar 一般不用改）
+
+    #==================== 建图/EKF 配置 ====================
+    # IMU 规格 (CHCNAV): 陀螺零偏不稳定性 2.5°/h, 全温零偏 ±0.2~0.4°/s; 加速度计零偏 ±1mg
+    mapping:
+      acc_cov: 0.1                     # 加速度计测量噪声协方差 (基于 ±1mg ≈ 0.01 m/s²)
+      gyr_cov: 0.1                     # 陀螺仪测量噪声协方差 (基于 ±0.4°/s ≈ 0.007 rad/s)
+      b_acc_cov: 0.0001                 # 加速度计偏置随机游走噪声协方差
+      b_gyr_cov: 0.0001                 # 陀螺仪偏置随机游走噪声协方差 (基于 2.5°/h)
+      fov_degree: 360                   # LiDAR 视场角 (度)，用于点云裁剪
+      det_range: 150.0                  # 检测范围 (m)，超出此范围的点将被忽略
+      extrinsic_est_en: true            # 是否在线估计 IMU-LiDAR 外参（true=启用在线标定）
+      extrinsic_T: [0.11, -0.15, 0.38]     # LiDAR 相对于 IMU 的平移外参 [x, y, z] (m)
+      extrinsic_R: [0.0, -1.0, 0.0,      # LiDAR 相对于 IMU 的旋转外参（3x3 旋转矩阵，行优先）
+                    1.0, 0.0, 0.0,
+                    0.0, 0.0, 1.0]
+
+    #==================== 发布配置 ====================
+    publish:
+      path_publish_en: true             # 是否发布轨迹 (nav_msgs/Path)
+      scan_publish_en: true             # 是否发布点云
+      dense_publish_en: false            # 是否发布稠密点云（false=降采样后发布）（关闭可节省带宽）
+      scan_bodyframe_pub_en: true       # 是否发布 IMU 体坐标系下的点云
+      scan_effect_pub_en: true         # 是否发布有效特征点云
+
+    #==================== 轨迹保存 ====================
+    path_save_en: true                 # 是否保存轨迹到文件（用于精度评估）
+
+    #==================== PCD 保存配置 ====================
+    pcd_save:
+      pcd_save_en: true                 # 是否保存点云地图为 PCD 文件
+      interval: -1                     # 每隔多少帧保存一次（-1=全部保存到单个文件）
+
+    #==================== 特征提取与滤波 ====================
+    feature_extract_enable: false       # 是否启用特征提取（false=使用全部点，推荐）
+    point_filter_num: 4                 # 点云降采样比例（每 N 个点取 1 个）
+    max_iteration: 3                    # IEKF 最大迭代次数
+    filter_size_surf: 0.1               # 当前帧点云体素滤波分辨率 (m)
+    filter_size_map: 0.5                # 地图点云体素滤波分辨率 (m)，0=不降采样
+    cube_side_length: 1000.0            # 局部地图立方体边长 (m)
+
+    #==================== iVox 增量体素地图配置 ====================
+    ivox_grid_resolution: 0.5           # iVox 体素分辨率 (m)，越小精度越高但内存越大 default=0.2
+    ivox_nearby_type: 18                # 近邻搜索类型: 0=CENTER, 6=NEARBY6, 18=NEARBY18, 26=NEARBY26
+    esti_plane_threshold: 0.1           # 平面拟合残差阈值，用于判断点是否为有效平面点 default=0.1
